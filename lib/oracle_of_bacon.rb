@@ -55,6 +55,7 @@ class OracleOfBacon
     # create a Response object from a string of XML markup.
     def initialize(xml)
       @doc = Nokogiri::XML(xml)
+			@data = []
       parse_response
     end
 
@@ -66,8 +67,30 @@ class OracleOfBacon
       # your code here: 'elsif' clauses to handle other responses
       # for responses not matching the 3 basic types, the Response
       # object should have type 'unknown' and data 'unknown response'         
+			elsif ! @doc.xpath('/link').empty?
+				parse_graph_response
+			elsif ! @doc.xpath('/spellcheck').empty?
+				parse_spellcheck_response
+			else
+				@type = :unknown
+				@data = "unknown response time"
       end
     end
+		
+		def parse_graph_response
+			@type = :graph
+			@doc.xpath("/link/*").each do |e|
+				@data << e.text
+			end
+		end
+
+		def parse_spellcheck_response
+			@type = :spellcheck
+			@doc.xpath("/spellcheck/*").each do |e|
+				@data << e.text
+			end
+		end
+
     def parse_error_response
       @type = :error
       @data = 'Unauthorized access'
